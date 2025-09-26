@@ -1,0 +1,38 @@
+name: Build and Release iOS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build IPA
+        run: |
+          xcodebuild -workspace YourApp.xcworkspace \
+                     -scheme YourScheme \
+                     -archivePath $PWD/build/YourApp.xcarchive archive
+          xcodebuild -exportArchive \
+                     -archivePath $PWD/build/YourApp.xcarchive \
+                     -exportOptionsPlist ExportOptions.plist \
+                     -exportPath $PWD/build
+
+      - name: Find IPA
+        id: find_ipa
+        run: |
+          IPA_PATH=$(find $PWD/build -name "*.ipa" | head -n 1)
+          echo "IPA_PATH=$IPA_PATH" >> $GITHUB_ENV
+          echo "Found IPA at $IPA_PATH"
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ env.IPA_PATH }}
+          tag_name: v1.0.0
+          name: Release v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
