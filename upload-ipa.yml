@@ -1,0 +1,41 @@
+name: Upload EeveeSpotify IPA
+
+on:
+  workflow_dispatch:
+    inputs:
+      ipa_url:
+        description: "URL do IPA"
+        required: true
+        default: "https://www.dropbox.com/scl/fi/k9icuvw15z7adnx4n8rnm/EeveeSpotify-5.9.9-9.0.50.ipa?rlkey=9vzcb9pzap8lj1ay9i1ne8mo4&st=j43lad63&dl=1"
+      deb_url:
+        description: "URL do DEB"
+        required: true
+        default: "org.swift.protobuf.swiftprotobuf_1.29.0_iphoneos-arm64.deb"
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Download IPA
+        run: |
+          wget "${{ inputs.ipa_url }}" -O EeveeSpotify.ipa
+          ls -lh EeveeSpotify.ipa
+
+      - name: Download DEB
+        run: |
+          wget "${{ inputs.deb_url }}" -O dummy.deb
+          ls -lh dummy.deb
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2.0.1
+        with:
+          tag_name: eevee-${{ github.run_number }}
+          name: EeveeSpotify Release ${{ github.run_number }}
+          files: EeveeSpotify.ipa
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
