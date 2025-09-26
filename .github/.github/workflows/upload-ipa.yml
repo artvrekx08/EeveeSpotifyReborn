@@ -1,0 +1,31 @@
+name: Upload IPA to Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      ipa_url:
+        description: "URL to IPA file"
+        required: true
+        default: "https://www.dropbox.com/scl/fi/k9icuvw15z7adnx4n8rnm/EeveeSpotify-5.9.9-9.0.50.ipa?dl=1"
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Download IPA
+        run: |
+          wget "${{ inputs.ipa_url }}" -O EeveeSpotify.ipa
+          ls -lh EeveeSpotify.ipa
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2.0.1
+        with:
+          tag_name: eevee-${{ github.run_number }}
+          name: EeveeSpotify Release ${{ github.run_number }}
+          files: EeveeSpotify.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
